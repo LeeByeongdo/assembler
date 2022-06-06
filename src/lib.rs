@@ -4,7 +4,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::Peekable;
-use std::ops::{Add};
+use std::ops::Add;
 
 pub fn parse_input_file(args: &[String]) -> Result<&str, &'static str> {
     if args.len() < 2 {
@@ -17,7 +17,7 @@ pub fn parse_input_file(args: &[String]) -> Result<&str, &'static str> {
 pub fn run(file: &str) {
     let file = File::open(file).unwrap();
     let lines = BufReader::new(file).lines();
-    let mut peekable = lines.peekable();
+    let peekable = lines.peekable();
 
     let mut parser = Parser {
         lines: peekable,
@@ -102,15 +102,9 @@ impl Parser {
         let first_char = first_char.unwrap();
 
         match first_char {
-            '@' => {
-                CommandType::ACommand
-            }
-            '(' => {
-                CommandType::LCommand
-            }
-            _ => {
-                CommandType::CCommand
-            }
+            '@' => CommandType::ACommand,
+            '(' => CommandType::LCommand,
+            _ => CommandType::CCommand,
         }
     }
 
@@ -152,7 +146,7 @@ impl Parser {
 
         if command.contains('=') {
             let index = command.chars().position(|c| c == '=').unwrap();
-            command = String::from(&command[index+1..]);
+            command = String::from(&command[index + 1..]);
         }
 
         if command.contains(';') {
@@ -187,28 +181,14 @@ impl Code {
         let dest = dest.trim();
 
         match dest {
-            "null0" => {
-                "000"
-            }
-            "M" => {
-                "001"
-            }
-            "D" => {
-                "010"
-            }
-            "MD" => {
-                "011"
-            }"A" => {
-                "100"
-            }"AM" => {
-                "101"
-            }
-            "AD" => {
-                "110"
-            }
-            "AMD" => {
-                "111"
-            }
+            "null0" => "000",
+            "M" => "001",
+            "D" => "010",
+            "MD" => "011",
+            "A" => "100",
+            "AM" => "101",
+            "AD" => "110",
+            "AMD" => "111",
             &_ => {
                 panic!("bad dest input: {}", dest)
             }
@@ -219,28 +199,14 @@ impl Code {
         let jump = jump.trim();
 
         match jump {
-            "null" => {
-                "000"
-            }
-            "JGT" => {
-                "001"
-            }
-            "JEQ" => {
-                "010"
-            }
-            "JGE" => {
-                "011"
-            }"JLT" => {
-                "100"
-            }"JNE" => {
-                "101"
-            }
-            "JLE" => {
-                "110"
-            }
-            "JMP" => {
-                "111"
-            }
+            "null" => "000",
+            "JGT" => "001",
+            "JEQ" => "010",
+            "JGE" => "011",
+            "JLT" => "100",
+            "JNE" => "101",
+            "JLE" => "110",
+            "JMP" => "111",
             &_ => {
                 panic!("bad jump input")
             }
@@ -251,88 +217,34 @@ impl Code {
         let comp = comp.trim().replace(' ', "");
 
         match comp.as_str() {
-            "0" => {
-                "0101010"
-            }
-            "1" => {
-                "0111111"
-            }
-            "-1" => {
-                "0111010"
-            }
-            "D" => {
-                "0001100"
-            }"A" => {
-                "0110000"
-            }"!D" => {
-                "0001101"
-            }
-            "!A" => {
-                "0110001"
-            }
-            "-D" => {
-                "0001111"
-            }
-            "-A" => {
-                "0110011"
-            }
-            "D+1" | "1+D" => {
-                "0011111"
-            }
-            "A+1" | "1+A" => {
-                "0110111"
-            }
-            "D-1" => {
-                "0001110"
-            }
-            "A-1" => {
-                "0110010"
-            }
-            "D+A" | "A+D" => {
-                "0000010"
-            }
-            "D-A" => {
-                "0010011"
-            }
-            "A-D" => {
-                "0000111"
-            }
-            "D&A" | "A&D" => {
-                "0000000"
-            }
-            "D|A" | "A|D" => {
-                "0010101"
-            }
-            "M" => {
-                "1110000"
-            }
-            "!M" => {
-                "1110001"
-            }
-            "-M" => {
-                "1110011"
-            }
-            "M+1" | "1+M" => {
-                "1110111"
-            }
-            "M-1" => {
-                "1110010"
-            }
-            "D+M" | "M+D" => {
-                "1000010"
-            }
-            "D-M" => {
-                "1010011"
-            }
-            "M-D" => {
-                "10000111"
-            }
-            "D&M" | "M&D" => {
-                "1000000"
-            }
-            "D|M" | "M|D" => {
-                "1010101"
-            }
+            "0" => "0101010",
+            "1" => "0111111",
+            "-1" => "0111010",
+            "D" => "0001100",
+            "A" => "0110000",
+            "!D" => "0001101",
+            "!A" => "0110001",
+            "-D" => "0001111",
+            "-A" => "0110011",
+            "D+1" | "1+D" => "0011111",
+            "A+1" | "1+A" => "0110111",
+            "D-1" => "0001110",
+            "A-1" => "0110010",
+            "D+A" | "A+D" => "0000010",
+            "D-A" => "0010011",
+            "A-D" => "0000111",
+            "D&A" | "A&D" => "0000000",
+            "D|A" | "A|D" => "0010101",
+            "M" => "1110000",
+            "!M" => "1110001",
+            "-M" => "1110011",
+            "M+1" | "1+M" => "1110111",
+            "M-1" => "1110010",
+            "D+M" | "M+D" => "1000010",
+            "D-M" => "1010011",
+            "M-D" => "10000111",
+            "D&M" | "M&D" => "1000000",
+            "D|M" | "M|D" => "1010101",
             &_ => {
                 panic!("bad comp input")
             }

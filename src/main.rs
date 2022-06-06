@@ -11,5 +11,4 @@ fn main() {
     });
 
     assembler::run(input_file_path);
-
 }
