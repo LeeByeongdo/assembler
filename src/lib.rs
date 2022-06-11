@@ -1,6 +1,6 @@
+mod code;
 mod parser;
 mod symbol_table;
-mod code;
 
 extern crate core;
 

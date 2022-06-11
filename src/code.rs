@@ -1,7 +1,7 @@
 pub struct Code {}
 
 impl Code {
-    pub fn dest(dest: &str) -> &str {
+    pub fn dest(dest: String) -> &'static str {
         let dest = dest.trim();
 
         match dest {
@@ -19,7 +19,7 @@ impl Code {
         }
     }
 
-    pub fn jump(jump: &str) -> &str {
+    pub fn jump(jump: String) -> &'static str {
         let jump = jump.trim();
 
         match jump {
@@ -37,7 +37,7 @@ impl Code {
         }
     }
 
-    pub fn comp(comp: &str) -> &str {
+    pub fn comp(comp: String) -> &'static str {
         let comp = comp.trim().replace(' ', "");
 
         match comp.as_str() {

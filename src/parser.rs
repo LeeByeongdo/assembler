@@ -1,10 +1,10 @@
+use crate::code::Code;
+use crate::symbol_table::SymbolTable;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::Peekable;
 use std::ops::Add;
-use crate::code::Code;
-use crate::symbol_table::SymbolTable;
 
 #[derive(PartialEq, Debug)]
 enum CommandType {
@@ -23,22 +23,38 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(file_path: String) -> Parser {
-        let file = File::open(file_path.as_str()).unwrap();
-        let buf_reader = BufReader::new(file);
+        let lines = Parser::get_lines(file_path.as_str());
 
         Parser {
             file_path,
-            lines: buf_reader.lines().peekable(),
+            lines,
             current_command: None,
             variable_address: 16,
         }
     }
 
     pub fn parse(&mut self) {
+        let mut symbol_table = self.prepare_symbol_table();
+
+        let result = self.parse_main(&mut symbol_table);
+
+        fs::write("program.hack", result).unwrap();
+    }
+
+    fn reset(&mut self) {
         self.variable_address = 16;
+        self.lines = Parser::get_lines(self.file_path.as_str());
+        self.current_command = None;
+    }
 
-        let mut result = String::new();
+    fn get_lines(file_path: &str) -> Peekable<Lines<BufReader<File>>> {
+        let file = File::open(file_path).unwrap();
+        let buf_reader = BufReader::new(file);
+        buf_reader.lines().peekable()
+    }
 
+    fn prepare_symbol_table(&mut self) -> SymbolTable {
+        self.reset();
         let mut symbol_table = SymbolTable::new();
 
         while self.has_more_commands() {
@@ -51,15 +67,21 @@ impl Parser {
                 }
                 CommandType::LCommand => {
                     let command = self.current_command.clone().unwrap();
-                    symbol_table.add_entry(String::from(&command[1..command.len() - 1]), symbol_table.command_address_counter)
+                    symbol_table.add_entry(
+                        String::from(&command[1..command.len() - 1]),
+                        symbol_table.command_address_counter,
+                    )
                 }
                 CommandType::IGNORE => {}
             }
         }
+        symbol_table
+    }
 
-        let file = File::open(self.file_path.as_str()).unwrap();
-        let buf_reader = BufReader::new(file);
-        self.lines = buf_reader.lines().peekable();
+    fn parse_main(&mut self, symbol_table: &mut SymbolTable) -> String {
+        self.reset();
+
+        let mut result = String::new();
 
         while self.has_more_commands() {
             self.advance();
@@ -67,40 +89,12 @@ impl Parser {
             let command_type = self.command_type();
             match command_type {
                 CommandType::ACommand => {
-                    let address = usize::from_str_radix(self.symbol().as_str(), 10);
-                    let addr = match address {
-                        Ok(number_address) => {
-                            number_address
-                        }
-                        Err(_) => {
-                            let symbol = self.symbol();
-                            let addr = if symbol_table.contains(&symbol) {
-                                symbol_table.get_address(&symbol)
-                            } else {
-                                let variable_address = self.variable_address;
-                                symbol_table.add_entry(String::from(symbol), variable_address);
-                                self.variable_address += 1;
-                                variable_address
-                            };
-                            addr
-                        }
-                    };
-
-                    let formatted = format!("{addr:016b}");
-                    result = result.add(formatted.as_str());
+                    let binary = self.parse_acommand(symbol_table);
+                    result = result.add(binary.as_str());
                 }
                 CommandType::CCommand => {
-                    let dest = self.dest();
-                    let dest = Code::dest(dest.as_str());
-
-                    let comp = self.comp();
-                    let comp = Code::comp(comp.as_str());
-
-                    let jump = self.jump();
-                    let jump = Code::jump(jump.as_str());
-
-                    let f = format!("111{}{}{}", comp, dest, jump);
-                    result = result.add(f.as_str());
+                    let binary = self.parse_ccommand();
+                    result = result.add(binary.as_str());
                 }
                 CommandType::LCommand => {}
                 _ => {}
@@ -112,11 +106,39 @@ impl Parser {
                 }
                 _ => {}
             }
-
-
         }
+        result
+    }
 
-        fs::write("program.hack", result).unwrap();
+    fn parse_ccommand(&mut self) -> String {
+        let dest = Code::dest(self.dest());
+        let comp = Code::comp(self.comp());
+        let jump = Code::jump(self.jump());
+
+        let binary = format!("111{}{}{}", comp, dest, jump);
+        binary
+    }
+
+    fn parse_acommand(&mut self, symbol_table: &mut SymbolTable) -> String {
+        let symbol = self.symbol();
+        let address = usize::from_str_radix(symbol.as_str(), 10);
+        let addr = match address {
+            Ok(number_address) => number_address,
+            Err(_) => {
+                let addr = if symbol_table.contains(&symbol) {
+                    symbol_table.get_address(&symbol)
+                } else {
+                    let variable_address = self.variable_address;
+                    symbol_table.add_entry(String::from(symbol), variable_address);
+                    self.variable_address += 1;
+                    variable_address
+                };
+                addr
+            }
+        };
+
+        let formatted = format!("{addr:016b}");
+        formatted
     }
 
     fn has_more_commands(&mut self) -> bool {
