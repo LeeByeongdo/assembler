@@ -51,3 +51,43 @@ impl SymbolTable {
         *self.table.get(symbol).unwrap()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::symbol_table::SymbolTable;
+
+    #[test]
+    fn test_new() {
+        let table = SymbolTable::new();
+
+        assert_eq!(table.get_address("SP"), 0);
+        assert_eq!(table.get_address("R2"), 2);
+        assert_eq!(table.get_address("THAT"), 4);
+        assert_eq!(table.get_address("SCREEN"), 16384);
+        assert_eq!(table.get_address("KBD"), 24576);
+    }
+
+    #[test]
+    fn test_add_entry() {
+        let mut table = SymbolTable::new();
+
+        table.add_entry(String::from("Xxx.yyy"), 50);
+        assert_eq!(table.get_address("Xxx.yyy"), 50);
+    }
+
+    #[test]
+    fn test_contains() {
+        let mut table = SymbolTable::new();
+
+        table.add_entry(String::from("Xxx.yyy"), 50);
+        assert_eq!(table.contains("Xxx.yyy"), true);
+    }
+
+    #[test]
+    fn test_get_address() {
+        let mut table = SymbolTable::new();
+
+        table.add_entry(String::from("Xxx.yyy"), 50);
+        assert_eq!(table.get_address("Xxx.yyy"), 50);
+    }
+}
