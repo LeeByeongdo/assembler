@@ -75,3 +75,30 @@ impl Code {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::code::Code;
+
+    #[test]
+    fn test_comp() {
+        assert_eq!(Code::comp(String::from("-M")), "1110011");
+        assert_eq!(Code::comp(String::from("D|M")), "1010101");
+        assert_eq!(Code::comp(String::from("M|D")), "1010101");
+    }
+
+    #[test]
+    fn test_dest() {
+        assert_eq!(Code::dest(String::from("AD")), "110");
+        assert_eq!(Code::dest(String::from("AMD")), "111");
+    }
+
+    #[test]
+    fn test_jump() {
+        assert_eq!(Code::jump(String::from("JEQ")), "010");
+        assert_eq!(Code::jump(String::from("JGE")), "011");
+    }
+
+
+
+}
