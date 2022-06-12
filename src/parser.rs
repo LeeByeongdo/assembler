@@ -38,7 +38,9 @@ impl Parser {
 
         let result = self.parse_main(&mut symbol_table);
 
-        fs::write("program.hack", result).unwrap();
+        let index = self.file_path.find(".asm").unwrap();
+        let hack_path = format!("{}.hack", &self.file_path[0..index]);
+        fs::write(hack_path, result).unwrap();
     }
 
     fn reset(&mut self) {
@@ -254,5 +256,25 @@ impl Parser {
         let jump = command.split(';').last().unwrap().trim();
 
         String::from(jump)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Parser;
+
+    #[test]
+    fn test_reset() {
+        let mut parser = Parser::new(String::from("test_program.asm"));
+        parser.current_command = Some(String::from("1234"));
+        assert_eq!(parser.current_command.as_ref().unwrap(), "1234");
+        parser.reset();
+        assert_eq!(parser.current_command, None);
+    }
+
+    #[test]
+    fn test_get_lines() {
+        let mut lines = Parser::get_lines("test_program.asm");
+        assert_eq!(lines.peek().unwrap().as_ref().unwrap().as_str(), "@256");
     }
 }
