@@ -98,7 +98,4 @@ mod tests {
         assert_eq!(Code::jump(String::from("JEQ")), "010");
         assert_eq!(Code::jump(String::from("JGE")), "011");
     }
-
-
-
 }
